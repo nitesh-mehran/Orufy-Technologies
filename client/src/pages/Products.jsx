@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const Products = () => {
   const [products, setProducts] = useState([]);
   const navigate = useNavigate();
@@ -9,7 +11,7 @@ const Products = () => {
   // Fetch all products
   const fetchProducts = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/products");
+      const res = await fetch(`${API_URL}/api/products`);
       const data = await res.json();
       if (data.success) setProducts(data.products);
     } catch (err) {
@@ -26,7 +28,7 @@ const Products = () => {
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const res = await fetch(`${API_URL}/api/products/${id}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -40,7 +42,7 @@ const Products = () => {
   // Toggle Publish
   const togglePublish = async (id) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/products/publish/${id}`, {
+      const res = await fetch(`${API_URL}/api/products/publish/${id}`, {
         method: "PATCH",
       });
       const data = await res.json();
@@ -83,7 +85,7 @@ const Products = () => {
               <div className="h-32 flex items-center justify-center mb-3 bg-gray-100 rounded-md overflow-hidden">
                 {p.images && p.images.length > 0 ? (
                   <img
-                    src={`http://localhost:5000/uploads/${p.images[0]}`}
+                    src={`${API_URL}/uploads/${p.images[0]}`}
                     alt={p.productName}
                     className="max-h-full max-w-full object-contain"
                   />
@@ -92,10 +94,10 @@ const Products = () => {
                 )}
               </div>
 
-              {/* Product Name Top */}
+              {/* Product Name */}
               <h2 className="font-bold text-md text-gray-800 mb-2">{p.productName}</h2>
 
-              {/* Product Info Left-Right */}
+              {/* Product Info */}
               <div className="flex-1 space-y-1 text-sm text-gray-500">
                 {[
                   ["Type", p.productType],

@@ -3,7 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 
-const API = "http://localhost:5000/api/auth";
+const API = import.meta.env.VITE_API_URL + "/api/auth";
+
 
 const LoginOtp = () => {
   const navigate = useNavigate();

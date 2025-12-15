@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const AddProduct = () => {
   const navigate = useNavigate();
 
@@ -68,9 +70,9 @@ const AddProduct = () => {
     images.forEach((img) => data.append("images", img));
 
     try {
-      const res = await fetch("http://localhost:5000/api/products", {
-        method: "POST",
-        body: data,
+      const res = await fetch(`${API_URL}/api/products`, {
+  method: "POST",
+  body: data,
       });
       const result = await res.json();
       if (result.success) {

@@ -10,17 +10,23 @@ import {
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
+const API_URL = import.meta.env.VITE_API_URL; 
+
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("published");
   const [products, setProducts] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [search, setSearch] = useState(""); // ✅ search state
+  const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
   const fetchProducts = async () => {
-    const res = await fetch("http://localhost:5000/api/products");
-    const data = await res.json();
-    if (data.success) setProducts(data.products);
+    try {
+      const res = await fetch(`${API_URL}/api/products`);
+      const data = await res.json();
+      if (data.success) setProducts(data.products);
+    } catch (err) {
+      console.error("Fetch Products Error:", err);
+    }
   };
 
   useEffect(() => {
@@ -29,36 +35,38 @@ const Dashboard = () => {
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
-    await fetch(`http://localhost:5000/api/products/${id}`, {
-      method: "DELETE",
-    });
-    fetchProducts();
+    try {
+      await fetch(`${API_URL}/api/products/${id}`, {
+        method: "DELETE",
+      });
+      fetchProducts();
+    } catch (err) {
+      console.error("Delete Error:", err);
+    }
   };
 
   const togglePublish = async (id) => {
-    await fetch(`http://localhost:5000/api/products/publish/${id}`, {
-      method: "PATCH",
-    });
-    fetchProducts();
+    try {
+      await fetch(`${API_URL}/api/products/publish/${id}`, {
+        method: "PATCH",
+      });
+      fetchProducts();
+    } catch (err) {
+      console.error("Publish Toggle Error:", err);
+    }
   };
 
-  /* ✅ tab + search filter */
   const filteredProducts = products.filter((p) => {
-    const tabMatch =
-      activeTab === "published" ? p.isPublished : !p.isPublished;
-
+    const tabMatch = activeTab === "published" ? p.isPublished : !p.isPublished;
     const searchMatch =
       p.productName.toLowerCase().includes(search.toLowerCase()) ||
       p.brandName?.toLowerCase().includes(search.toLowerCase()) ||
       p.productType?.toLowerCase().includes(search.toLowerCase());
-
     return tabMatch && searchMatch;
   });
 
   return (
     <div className="flex min-h-screen pt-16">
-      
-      {/* Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 lg:hidden"
@@ -66,12 +74,10 @@ const Dashboard = () => {
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed lg:static top-16 z-40 h-[calc(100vh-64px)] w-64 bg-[#1f2233] text-white transition-transform duration-300
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
-        {/* Search */}
         <div className="px-4 py-4 border-b border-gray-700">
           <div className="relative">
             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
@@ -84,11 +90,9 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Menu */}
         <nav className="px-3 py-4 space-y-2">
           <MenuItem icon={<FaHome />} text="Home" onClick={() => navigate("/dashboard")} />
           <MenuItem icon={<FaBoxOpen />} text="Products" onClick={() => navigate("/products")} />
-
           <div
             onClick={() => navigate("/addproduct")}
             className="ml-7 flex items-center gap-3 px-3 py-2 rounded-md hover:bg-[#2a2d40] cursor-pointer text-gray-300"
@@ -99,10 +103,7 @@ const Dashboard = () => {
         </nav>
       </aside>
 
-      {/* Main */}
       <div className="flex-1 bg-white rounded-tl-xl overflow-hidden">
-        
-        {/* Top bar */}
         <div className="flex items-center px-4 border-b h-12">
           <FaBars
             className="lg:hidden cursor-pointer text-gray-700 text-lg"
@@ -111,7 +112,6 @@ const Dashboard = () => {
         </div>
 
         <div className="p-4 sm:p-6 lg:p-8">
-          {/* Tabs */}
           <div className="flex gap-6 border-b mb-6">
             {["published", "unpublished"].map((tab) => (
               <button
@@ -128,7 +128,6 @@ const Dashboard = () => {
             ))}
           </div>
 
-          {/* Products */}
           {filteredProducts.length === 0 ? (
             <div className="h-[50vh] flex flex-col items-center justify-center">
               <p className="text-gray-500 mb-4">No products found</p>
@@ -145,11 +144,11 @@ const Dashboard = () => {
                 <div key={p._id} className="border rounded-lg p-4 shadow">
                   <div className="h-40 bg-gray-100 rounded mb-4 flex items-center justify-center">
                     {p.images?.length ? (
-                      <img
-                        src={`http://localhost:5000/uploads/${p.images[0]}`}
-                        className="h-full object-contain"
-                        alt=""
-                      />
+                       <img
+                    src={`${API_URL}/uploads/${p.images[0]}`}
+                    alt={p.productName}
+                    className="max-h-full max-w-full object-contain"
+                  />
                     ) : (
                       <span className="text-gray-400">No Image</span>
                     )}
@@ -202,7 +201,6 @@ const Dashboard = () => {
   );
 };
 
-/* helpers */
 const MenuItem = ({ icon, text, onClick }) => (
   <div
     onClick={onClick}

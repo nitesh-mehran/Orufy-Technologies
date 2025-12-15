@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 const EditProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -11,8 +13,11 @@ const EditProduct = () => {
     productType: "",
     stock: "",
     brandName: "",
+    mrp: "",
+    sellingPrice: "",
     exchangeEligible: "Yes",
   });
+
   const [images, setImages] = useState([]); // new uploaded files
   const [existingImages, setExistingImages] = useState([]); // existing images from backend
   const [loading, setLoading] = useState(false);
@@ -20,7 +25,7 @@ const EditProduct = () => {
   // Fetch product details
   const fetchProduct = async () => {
     try {
-      const res = await fetch(`http://localhost:5000/api/products`);
+      const res = await fetch(`${API_URL}/api/products`);
       const data = await res.json();
       if (data.success) {
         const product = data.products.find((p) => p._id === id);
@@ -34,6 +39,8 @@ const EditProduct = () => {
           productType: product.productType,
           stock: product.stock,
           brandName: product.brandName,
+          mrp: product.mrp,
+          sellingPrice: product.sellingPrice,
           exchangeEligible: product.exchangeEligible,
         });
         setExistingImages(product.images);
@@ -58,22 +65,17 @@ const EditProduct = () => {
     setImages(Array.from(e.target.files));
   };
 
-  // Handle submit
+  // Submit
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     const data = new FormData();
-    data.append("productName", formData.productName);
-    data.append("productType", formData.productType);
-    data.append("stock", formData.stock);
-    data.append("brandName", formData.brandName);
-    data.append("exchangeEligible", formData.exchangeEligible);
-
+    Object.entries(formData).forEach(([key, value]) => data.append(key, value));
     images.forEach((file) => data.append("images", file));
 
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
+      const res = await fetch(`${API_URL}/api/products/${id}`, {
         method: "PUT",
         body: data,
       });
@@ -99,7 +101,7 @@ const EditProduct = () => {
         className="bg-white p-6 rounded shadow max-w-2xl mx-auto space-y-4"
       >
         <div>
-          <label className="block text-sm font-medium mb-1">Product Name</label>
+          <label className="block text-sm font-medium mb-1">Product Name *</label>
           <input
             type="text"
             name="productName"
@@ -111,24 +113,57 @@ const EditProduct = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Product Type</label>
-          <input
-            type="text"
+          <label className="block text-sm font-medium mb-1">Product Type *</label>
+          <select
             name="productType"
             value={formData.productType}
             onChange={handleChange}
+            required
+            className="w-full border px-3 py-2 rounded focus:outline-none"
+          >
+            <option value="">Select product type</option>
+            <option>Foods</option>
+            <option>Electronics</option>
+            <option>Clothes</option>
+            <option>Beauty Products</option>
+            <option>Others</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Stock *</label>
+          <input
+            type="number"
+            name="stock"
+            value={formData.stock}
+            onChange={handleChange}
+            min="0"
             required
             className="w-full border px-3 py-2 rounded focus:outline-none"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1">Stock</label>
+          <label className="block text-sm font-medium mb-1">MRP (₹) *</label>
           <input
             type="number"
-            name="stock"
-            value={formData.stock}
+            name="mrp"
+            value={formData.mrp}
             onChange={handleChange}
+            min="0"
+            required
+            className="w-full border px-3 py-2 rounded focus:outline-none"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Selling Price (₹) *</label>
+          <input
+            type="number"
+            name="sellingPrice"
+            value={formData.sellingPrice}
+            onChange={handleChange}
+            min="0"
             required
             className="w-full border px-3 py-2 rounded focus:outline-none"
           />
@@ -174,7 +209,7 @@ const EditProduct = () => {
             {existingImages.map((img, idx) => (
               <img
                 key={idx}
-                src={`http://localhost:5000/uploads/${img}`}
+                src={`${API_URL}/uploads/${img}`}
                 alt="existing"
                 className="w-20 h-20 object-contain border p-1 rounded"
               />
