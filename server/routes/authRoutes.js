@@ -2,12 +2,9 @@ const express = require("express");
 const router = express.Router();
 const { sendOtp, verifyOtp } = require("../controllers/authController");
 
-// TEST ROUTE 👇
+// Test route
 router.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Auth API is working ",
-  });
+  res.json({ success: true, message: "Auth API is working" });
 });
 
 router.post("/send-otp", sendOtp);
