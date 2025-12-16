@@ -9,13 +9,23 @@ async function sendMail(to, subject, text) {
       host: "smtp.gmail.com",
       port: 587,
       secure: false,
-      auth: { user: FROM_EMAIL, pass: EMAIL_PASS },
+      auth: {
+        user: FROM_EMAIL,
+        pass: EMAIL_PASS,
+      },
     });
 
-    await transporter.sendMail({ from: `"Productr" <${FROM_EMAIL}>`, to, subject, text });
+    const info = await transporter.sendMail({
+      from: `"Productr" <${FROM_EMAIL}>`,
+      to,
+      subject,
+      text,
+    });
+
+    console.log("✅ Email sent:", info.messageId);
     return { success: true };
   } catch (err) {
-    console.error("MAIL ERROR:", err);
+    console.error("❌ Email sending error:", err.message);
     return { success: false, error: err.message };
   }
 }
