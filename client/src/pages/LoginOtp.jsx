@@ -3,8 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 
+// ✅ Make sure this env variable is set in .env
 const API = import.meta.env.VITE_API_URL + "/api/auth";
-
 
 const LoginOtp = () => {
   const navigate = useNavigate();
@@ -20,7 +20,7 @@ const LoginOtp = () => {
 
   const inputRefs = useRef([]);
 
-  /* clear error automatically */
+  // Clear error automatically
   useEffect(() => {
     if (error) {
       const t = setTimeout(() => setError(""), 3000);
@@ -28,7 +28,7 @@ const LoginOtp = () => {
     }
   }, [error]);
 
-  /* OTP validity timer */
+  // OTP validity timer
   useEffect(() => {
     let interval;
     if (step === "enter-otp" && otpTimer > 0) {
@@ -37,7 +37,7 @@ const LoginOtp = () => {
     return () => clearInterval(interval);
   }, [step, otpTimer]);
 
-  /* Resend cooldown timer */
+  // Resend cooldown timer
   useEffect(() => {
     let interval;
     if (!resendAvailable && step === "enter-otp" && resendTimer > 0) {
@@ -69,37 +69,33 @@ const LoginOtp = () => {
     }
   };
 
-const sendOtpRequest = async () => {
-  try {
-    const value = identifier.trim();
+  // ✅ Send OTP Request
+  const sendOtpRequest = async () => {
+    try {
+      const value = identifier.trim();
+      if (!value) return setError("Enter email or phone");
 
-    if (!value) {
-      return setError("Enter email or phone");
+      const payload = value.includes("@") ? { email: value } : { phone: value };
+
+      console.log("Sending OTP payload:", payload);
+
+      // ✅ Explicitly set JSON headers
+      await axios.post(`${API}/send-otp`, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      setStep("enter-otp");
+      setOtp(["", "", "", "", "", ""]);
+      setOtpTimer(300);
+      setResendAvailable(false);
+      setResendTimer(30);
+    } catch (err) {
+      console.error("Send OTP Error:", err.response?.data || err);
+      setError(err.response?.data?.message || "Failed to send OTP");
     }
-
-    const payload = value.includes("@")
-      ? { email: value }
-      : { phone: value };
-
-    console.log("Sending OTP payload:", payload);
-
-    await axios.post(`${API}/send-otp`, payload);
-
-    setStep("enter-otp");
-    setOtp(["", "", "", "", "", ""]);
-    setOtpTimer(300);
-    setResendAvailable(false);
-    setResendTimer(30);
-  } catch (err) {
-    console.error("Send OTP Error:", err.response?.data);
-    setError(err.response?.data?.message || "Failed to send OTP");
-  }
-};
-
-
+  };
 
   const handleSendOtp = () => {
-    if (!identifier) return setError("Enter email or phone");
     sendOtpRequest();
   };
 
@@ -110,19 +106,18 @@ const sendOtpRequest = async () => {
   const handleSubmit = async () => {
     const finalOtp = otp.join("");
     if (finalOtp.length < 6) return setError("Invalid OTP");
+
     try {
-      await axios.post(`${API}/verify-otp`, {
-        identifier,
-        otp: finalOtp,
-      });
+      await axios.post(
+        `${API}/verify-otp`,
+        { identifier, otp: finalOtp },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-      setUser({
-        email: identifier,
-        name: identifier.split("@")[0],
-      });
-
+      setUser({ email: identifier, name: identifier.split("@")[0] });
       navigate("/dashboard");
     } catch (err) {
+      console.error("Verify OTP Error:", err.response?.data || err);
       setError(err.response?.data?.message || "Invalid OTP");
     }
   };
@@ -156,20 +151,15 @@ const sendOtpRequest = async () => {
                   value={identifier}
                   onChange={(e) => setIdentifier(e.target.value)}
                 />
-
                 <p className="text-red-500 text-sm mt-2">{error}</p>
-
                 <button
                   onClick={handleSendOtp}
                   className="mt-6 w-full bg-blue-800 hover:bg-blue-700 text-white py-3 rounded-lg font-medium transition"
                 >
                   Send OTP
                 </button>
-
-                {/* SIGNUP CTA */}
-               <p className="mt-30 text-sm border border-gray-300 text-gray-600 text-center py-4">
-                  Don’t have a <span className="font-medium">Productr</span>{" "}
-                  account?{" "}
+                <p className="mt-30 text-sm border border-gray-300 text-gray-600 text-center py-4">
+                  Don’t have a <span className="font-medium">Productr</span> account?{" "}
                   <br />
                   <span
                     onClick={() => navigate("/signup")}
@@ -202,9 +192,7 @@ const sendOtpRequest = async () => {
                     onClick={handleResendOtp}
                     disabled={!resendAvailable}
                     className={`text-blue-800 font-semibold text-sm ${
-                      !resendAvailable
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
+                      !resendAvailable ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
                     Resend OTP {!resendAvailable && `(${resendTimer}s)`}

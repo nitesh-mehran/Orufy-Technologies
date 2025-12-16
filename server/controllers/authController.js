@@ -9,6 +9,8 @@ function generateOtp() {
 
 exports.sendOtp = async (req, res) => {
   try {
+    console.log("REQ BODY:", req.body); // ✅ check incoming payload
+
     const { email, phone } = req.body;
 
     if (!email && !phone)
@@ -42,7 +44,6 @@ exports.sendOtp = async (req, res) => {
       );
 
       console.log("Email result:", mailResult);
-
       if (!mailResult.success)
         return res.status(500).json({ success: false, message: "Email sending failed: " + mailResult.error });
     } else {
@@ -55,6 +56,7 @@ exports.sendOtp = async (req, res) => {
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 exports.verifyOtp = async (req, res) => {
   try {
