@@ -69,18 +69,34 @@ const LoginOtp = () => {
     }
   };
 
-  const sendOtpRequest = async () => {
-    try {
-      await axios.post(`${API}/send-otp`, { email: identifier });
-      setStep("enter-otp");
-      setOtp(["", "", "", "", "", ""]);
-      setOtpTimer(300);
-      setResendAvailable(false);
-      setResendTimer(30);
-    } catch {
-      setError("Failed to send OTP");
+const sendOtpRequest = async () => {
+  try {
+    const value = identifier.trim();
+
+    if (!value) {
+      return setError("Enter email or phone");
     }
-  };
+
+    const payload = value.includes("@")
+      ? { email: value }
+      : { phone: value };
+
+    console.log("Sending OTP payload:", payload);
+
+    await axios.post(`${API}/send-otp`, payload);
+
+    setStep("enter-otp");
+    setOtp(["", "", "", "", "", ""]);
+    setOtpTimer(300);
+    setResendAvailable(false);
+    setResendTimer(30);
+  } catch (err) {
+    console.error("Send OTP Error:", err.response?.data);
+    setError(err.response?.data?.message || "Failed to send OTP");
+  }
+};
+
+
 
   const handleSendOtp = () => {
     if (!identifier) return setError("Enter email or phone");
